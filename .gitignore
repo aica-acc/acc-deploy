@@ -1,0 +1,13 @@
+# 비밀값 (example 만 올린다)
+.env
+env/ai.env
+
+# 서비스 레포 3개는 각자 git 으로 관리한다 (이 폴더 안에 clone)
+acc-ai/
+acc-backend/
+acc-front/
+
+# 레포에 없는 원본 자료 / 런타임 데이터 (README "준비" 참고)
+data/
+assets/
+ACC_project_*/

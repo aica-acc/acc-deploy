@@ -1,0 +1,6 @@
+# GCP VM 등 공인 IP 로 직접 서비스할 때 (profile: caddy). 80/443 포트 개방 + 도메인 A 레코드 필요.
+# Let's Encrypt 인증서를 자동 발급/갱신한다.
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy front:80
+}

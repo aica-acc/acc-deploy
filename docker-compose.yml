@@ -1,0 +1,149 @@
+# ACC 통합 배포용 compose (db + ai + backend + front)
+# 백엔드가 모든 데이터의 중심이다.
+#   브라우저 → front(nginx) → backend(/api/, /static/) → ai, db
+#  - front(nginx) 는 backend 로만 전달한다.
+#  - ai 와 db 는 backend 만 접근하며 호스트에 포트를 열지 않는다.
+#  - AI 정적 파일(/static/**)도 backend 가 중계한다.
+name: acc
+
+# 이미지: 도커 허브(${ACC_REGISTRY}/acc-*:${ACC_TAG})에서 받아 쓴다.
+#   받아서 실행(빌드 없음):  docker compose pull && docker compose up -d
+#   소스에서 직접 빌드:      docker compose up -d --build
+
+services:
+  db:
+    image: mysql:8.4.7
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: UTC
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  ai:
+    build: ./acc-ai
+    image: ${ACC_REGISTRY:-scv3114}/acc-ai:${ACC_TAG:-latest}
+    restart: unless-stopped
+    env_file: ./env/ai.env
+    environment:
+      PROJECT_ROOT: /app
+      FRONT_PROJECT_ROOT: /data/acc-front
+      FILE_ROOT: /data/acc
+      PROMOTION_DIR: /data/acc-ai/promotion
+      # AI 가 응답에 넣는 정적 파일 URL — 사용자가 접속하는 주소 (/static 은 nginx → backend → ai)
+      AI_PUBLIC_BASE_URL: ${PUBLIC_URL:-http://localhost:5173}
+    # 포트를 열지 않는다: backend 만 내부 네트워크(ai:5000)로 호출한다
+    volumes:
+      - ./assets/ai-data:/app/app/data
+      - ./assets/ai-fonts:/app/app/fonts:ro
+      - ./data/front-public:/data/acc-front/public
+      - promotion:/data/acc-ai/promotion
+      - acc-files:/data/acc
+
+  backend:
+    build: ./acc-backend
+    image: ${ACC_REGISTRY:-scv3114}/acc-backend:${ACC_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      ai:
+        condition: service_started
+    ports:
+      # 디버깅용 직접 접근 (운영에서는 DEBUG_BIND=127.0.0.1 로 외부 차단). 실제 트래픽은 front(nginx) 경유
+      - "${DEBUG_BIND:-127.0.0.1}:8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?serverTimezone=UTC&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      MYBATIS_MAPPER_LOCATIONS: classpath:/mappers/**/*.xml
+      MYBATIS_TYPE_ALIASES_PACKAGE: com.assistant.acc
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 50MB
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 50MB
+      PYTHON_API_URL: http://ai:5000
+      ACCAI_BASE_URL: http://ai:5000
+      REACT_BASE_PATH: /data/acc-front
+      PYTHON_BASE_DIR: /data/acc-ai/promotion
+      FILES_GENERATED_ROOT: /data/acc/data/promotion/
+      FILES_PATH: /data/acc/data/proposal
+      FILES_POSTER_IMAGES_DIR: /data/acc-ai/promotion
+      # --- 인증 (JWT) ---
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-}
+      AUTH_JWT_EXPIRE_HOURS: ${AUTH_JWT_EXPIRE_HOURS:-12}
+      AUTH_TEST_LOGIN_ENABLED: ${AUTH_TEST_LOGIN_ENABLED:-true}
+      AUTH_ADMIN_EMAIL: ${AUTH_ADMIN_EMAIL:-admin@acc.local}
+      AUTH_ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD:-}
+      TEST_SAMPLES_DIR: /data/samples/proposals
+      CORS_ALLOWED_ORIGIN_PATTERNS: ${PUBLIC_URL:-http://localhost:5173},http://localhost:*,http://127.0.0.1:*
+    volumes:
+      - ./data/front-public:/data/acc-front/public
+      - promotion:/data/acc-ai/promotion
+      - acc-files:/data/acc
+      - ./assets/samples:/data/samples:ro
+
+  front:
+    build:
+      context: ./acc-front
+      args:
+        VITE_PUBLIC_FOLDER_PATH: /data/acc-front/public
+        # 같은 도메인의 nginx 경로를 사용 (도메인이 바뀌어도 재빌드 불필요)
+        VITE_API_BASE_URL: ""
+    image: ${ACC_REGISTRY:-scv3114}/acc-front:${ACC_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      BACKEND_HOST: backend
+      BACKEND_PORT: 8081
+    ports:
+      - "${FRONT_BIND:-127.0.0.1}:${FRONT_PORT:-5173}:80"
+    volumes:
+      - ./data/front-public:/srv/public:ro
+
+  # --- 선택: 외부 공개 (둘 중 하나만 사용) ---------------------------------
+  # A) Cloudflare Tunnel: 공유기 포트포워딩/공인 IP 없이 노트북(Ubuntu)에서 서빙
+  #    docker compose --profile tunnel up -d
+  cloudflared:
+    image: cloudflare/cloudflared:2025.11.1
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - front
+
+  # B) Caddy(자동 HTTPS): GCP VM 등 공인 IP 로 직접 서빙. 80/443 개방 필요
+  #    docker compose --profile caddy up -d
+  caddy:
+    image: caddy:2.10.2-alpine
+    profiles: ["caddy"]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      - front
+
+volumes:
+  caddy-data:
+  db-data:
+  promotion:
+  acc-files:
