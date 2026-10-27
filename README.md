@@ -2,6 +2,8 @@
 
 ACC 배포 설정 레포. `docker compose` 로 db + ai + backend + front 를 한 번에 띄운다. (DB 스키마는 백엔드 기동 시 자동 마이그레이션)
 
+> **처음이라면 [시작 가이드(docs/SETUP.md)](docs/SETUP.md) 부터.** 설치 → 키 발급 → 설정 → 실행 → 서버·도메인 순서로 정리되어 있다.
+
 ```
 브라우저 ──▶ front(nginx) ──/api/, /static/──▶ backend ──▶ db (MySQL)
                                                  └──▶ ai (FastAPI, 외부 비노출)
