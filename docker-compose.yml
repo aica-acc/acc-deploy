@@ -97,7 +97,6 @@ services:
     build:
       context: ./acc-front
       args:
-        VITE_PUBLIC_FOLDER_PATH: /data/acc-front/public
         # 같은 도메인의 nginx 경로를 사용 (도메인이 바뀌어도 재빌드 불필요)
         VITE_API_BASE_URL: ""
     image: ${ACC_REGISTRY:-scv3114}/acc-front:${ACC_TAG:-latest}
@@ -109,8 +108,7 @@ services:
       BACKEND_PORT: 8081
     ports:
       - "${FRONT_BIND:-127.0.0.1}:${FRONT_PORT:-5173}:80"
-    volumes:
-      - ./data/front-public:/srv/public:ro
+    # 생성 이미지는 nginx 가 직접 내보내지 않고 백엔드 /files/{토큰} 으로만 나간다 (예전 /data/ 공개 경로 제거)
 
   # --- 선택: 외부 공개 (둘 중 하나만 사용) ---------------------------------
   # A) Cloudflare Tunnel: 공유기 포트포워딩/공인 IP 없이 노트북(Ubuntu)에서 서빙
