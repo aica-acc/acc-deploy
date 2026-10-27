@@ -78,6 +78,8 @@ git clone https://github.com/aica-acc/acc-front.git
 - 외부에 공개하는 서버는 `.env` 에서 `AUTH_TEST_LOGIN_ENABLED=false`, `AUTH_JWT_SECRET` 설정을 권장한다.
 - 마이페이지: **프로젝트**(목록/상세), **저장소**(`/mypage/drive`: 내 모든 홍보물을 프로젝트·종류별로 필터, 미리보기, 다운로드), **마이프로필**(`/mypage/profile`: 이름·연락처 수정, 비밀번호 변경, 내 활동 요약. test 계정은 변경 불가). 없는 주소는 404 페이지로 연결된다.
 - 샘플 기획서는 `assets/samples/proposals/` (`samples.json` + 파일). 추가하려면 파일을 넣고 `samples.json` 에 항목을 더하면 된다.
+  - **디스크 파일명은 영문**(`<id>.pdf`)으로 둔다. 한글 파일명은 zip 압축·해제 과정에서 깨져 샘플을 찾지 못한다(404). 사용자에게 보이는 한글 이름은 `fileName` 에 적는다.
+  - 예: `{"id": "damyang-santa", "title": "제7회 담양산타축제", "file": "damyang-santa.pdf", "fileName": "제7회 담양산타축제.pdf", "theme": "...", "keywords": [...]}`
 
 ## 원본 자료 공유 (Drive)
 
