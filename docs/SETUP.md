@@ -61,7 +61,7 @@ acc-deploy/
 
 | 키 | 발급 | 쓰는 기능 |
 |---|---|---|
-| `CLIPDROP_API_KEY` | [clipdrop.co/apis](https://clipdrop.co/apis) | 에디터 배경 제거 |
+| `CLIPDROP_API_KEY` | [clipdrop.co/apis](https://clipdrop.co/apis) | 에디터용 **이미지 속 글자 지우기**(remove-text, 배경 제거 아님). 없으면 Replicate 로 대체 |
 | `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET` | [developers.naver.com](https://developers.naver.com/apps/) → 애플리케이션 등록 → **데이터랩(검색어트렌드)** 선택 | 키워드·지역 트렌드 |
 | `SERPAPI_API_KEY` | [serpapi.com](https://serpapi.com/manage-api-key) | 포스터 수집 |
 | `CLOUDCONVERT_API_KEY` | [cloudconvert.com](https://cloudconvert.com/dashboard/api/v2/keys) | HWP 기획서 변환 |
