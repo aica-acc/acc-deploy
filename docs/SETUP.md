@@ -55,6 +55,7 @@ acc-deploy/
 | `OPENAI_API_KEY` | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | 결제 수단 등록 + 크레딧 충전 필요 |
 | `GEMINI_API_KEY` | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | 영상 생성(Veo)은 결제 설정된 프로젝트 필요 |
 | `REPLICATE_API_TOKEN` | [replicate.com/account/api-tokens](https://replicate.com/account/api-tokens) | 결제 수단 등록 필요 |
+| `YOUTUBE_API_KEY` | [Google Cloud Console](https://console.cloud.google.com/apis/library/youtube.googleapis.com) → YouTube Data API v3 사용 → 사용자 인증 정보 → API 키 | 무료. 비어 있으면 서버가 뜨지 않음 |
 
 ### 기능별 키 (없으면 해당 기능만 실패)
 
@@ -62,12 +63,11 @@ acc-deploy/
 |---|---|---|
 | `CLIPDROP_API_KEY` | [clipdrop.co/apis](https://clipdrop.co/apis) | 에디터 배경 제거 |
 | `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET` | [developers.naver.com](https://developers.naver.com/apps/) → 애플리케이션 등록 → **데이터랩(검색어트렌드)** 선택 | 키워드·지역 트렌드 |
-| `YOUTUBE_API_KEY` | [Google Cloud Console](https://console.cloud.google.com/apis/library/youtube.googleapis.com) → YouTube Data API v3 사용 → 사용자 인증 정보 | 유튜브 트렌드 |
 | `SERPAPI_API_KEY` | [serpapi.com](https://serpapi.com/manage-api-key) | 포스터 수집 |
 | `CLOUDCONVERT_API_KEY` | [cloudconvert.com](https://cloudconvert.com/dashboard/api/v2/keys) | HWP 기획서 변환 |
 | `TAVILY_API_KEY`, `PINECONE_API_KEY`, `HUGGING_FACE_TOKEN` | 각 사이트 | 검색·벡터 검색·모델 다운로드 |
 
-처음에는 **필수 3개만** 넣고 띄워 본 뒤, 필요한 기능의 키를 추가하면 된다.
+처음에는 **필수 4개만** 넣고 띄워 본 뒤, 필요한 기능의 키를 추가하면 된다.
 
 ## 4. 설정 파일 만들기
 
@@ -84,6 +84,7 @@ cp env/ai.env.example env/ai.env
 OPENAI_API_KEY=sk-...
 GEMINI_API_KEY=AIza...
 REPLICATE_API_TOKEN=r8_...
+YOUTUBE_API_KEY=AIza...
 ```
 
 경로 항목(`PROJECT_ROOT` 등)은 비워 둔다. 도커가 알아서 채운다.
