@@ -82,11 +82,17 @@ services:
       # --- 인증 (JWT) ---
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-}
       AUTH_JWT_EXPIRE_HOURS: ${AUTH_JWT_EXPIRE_HOURS:-12}
-      AUTH_TEST_LOGIN_ENABLED: ${AUTH_TEST_LOGIN_ENABLED:-true}
+      AUTH_TEST_LOGIN_ENABLED: ${AUTH_TEST_LOGIN_ENABLED:-false}
       AUTH_ADMIN_EMAIL: ${AUTH_ADMIN_EMAIL:-admin@acc.local}
       AUTH_ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD:-}
+      # --- 소셜 로그인 (비우면 버튼이 나오지 않음) ---
+      OAUTH_KAKAO_CLIENT_ID: ${KAKAO_REST_API_KEY:-}
+      OAUTH_KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET:-}
+      OAUTH_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      OAUTH_GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       TEST_SAMPLES_DIR: /data/samples/proposals
-      CORS_ALLOWED_ORIGIN_PATTERNS: ${PUBLIC_URL:-http://localhost:5173},http://localhost:*,http://127.0.0.1:*
+      # 기본은 PUBLIC_URL 한 곳만 허용 (화면과 API 가 같은 주소라 보통 CORS 가 필요 없다). vite 개발 서버를 붙일 때만 .env 에서 넓힌다
+      CORS_ALLOWED_ORIGIN_PATTERNS: ${CORS_ALLOWED_ORIGIN_PATTERNS:-${PUBLIC_URL:-http://localhost:5173}}
     volumes:
       - ./data/front-public:/data/acc-front/public
       - promotion:/data/acc-ai/promotion
@@ -97,9 +103,9 @@ services:
     build:
       context: ./acc-front
       args:
-        VITE_PUBLIC_FOLDER_PATH: /data/acc-front/public
         # 같은 도메인의 nginx 경로를 사용 (도메인이 바뀌어도 재빌드 불필요)
         VITE_API_BASE_URL: ""
+        VITE_MEDIA_BASE_URL: ${VITE_MEDIA_BASE_URL-https://media.donghwan.cloud}
     image: ${ACC_REGISTRY:-scv3114}/acc-front:${ACC_TAG:-latest}
     restart: unless-stopped
     depends_on:
@@ -109,8 +115,7 @@ services:
       BACKEND_PORT: 8081
     ports:
       - "${FRONT_BIND:-127.0.0.1}:${FRONT_PORT:-5173}:80"
-    volumes:
-      - ./data/front-public:/srv/public:ro
+    # 생성 이미지는 nginx 가 직접 내보내지 않고 백엔드 /files/{토큰} 으로만 나간다 (예전 /data/ 공개 경로 제거)
 
   # --- 선택: 외부 공개 (둘 중 하나만 사용) ---------------------------------
   # A) Cloudflare Tunnel: 공유기 포트포워딩/공인 IP 없이 노트북(Ubuntu)에서 서빙

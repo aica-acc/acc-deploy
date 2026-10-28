@@ -152,7 +152,7 @@ git clone https://github.com/aica-acc/acc-front.git
 2. `.env` 를 바꾼다.
    ```
    PUBLIC_URL=https://acc.donghwan.cloud
-   AUTH_TEST_LOGIN_ENABLED=false     # 외부 공개 시 test 로그인 차단 (시연용이면 true 유지)
+   AUTH_TEST_LOGIN_ENABLED=false     # 기본값도 false. 시연할 때만 true
    DEBUG_BIND=127.0.0.1               # 백엔드 직접 포트는 외부에 열지 않는다
    ```
    `MYSQL_*`, `AUTH_JWT_SECRET`, `AUTH_ADMIN_PASSWORD` 는 로컬과 **다른** 값으로 새로 만든다.

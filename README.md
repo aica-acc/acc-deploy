@@ -74,9 +74,9 @@ git clone https://github.com/aica-acc/acc-front.git
 
 - 권한: `USER`(일반) / `TEST`(샘플 자동 입력) / `ADMIN`(관리자 화면 `/admin`: 회원 목록, 권한 변경, 계정 정지, 회원 데이터 초기화)
 - 권한 변경·정지는 **즉시** 적용된다 (백엔드가 매 요청마다 DB 에서 확인).
-- 로그인하지 않으면 `/`, `/login` 외의 모든 화면·API 가 막힌다 (`/api/auth/*` 와 이미지 경로 `/static/**`, `/poster-images/**` 만 공개).
+- 로그인하지 않으면 `/`, `/login` 외의 모든 화면·API 가 막힌다 (`/api/auth/*` 만 공개. 생성 이미지는 추측할 수 없는 `/files/{토큰}` 주소로만 나간다).
 - 계정 초기화: 백엔드 기동 시 test 계정은 항상 보장되고, `.env` 의 `AUTH_ADMIN_PASSWORD`(8자 이상)를 주면 관리자 계정이 생성된다.
-- 외부에 공개하는 서버는 `.env` 에서 `AUTH_TEST_LOGIN_ENABLED=false`, `AUTH_JWT_SECRET` 설정을 권장한다.
+- test 로그인은 기본으로 꺼져 있다. 로컬 테스트·시연할 때만 `.env` 에 `AUTH_TEST_LOGIN_ENABLED=true` 를 넣는다. 외부에 공개하는 서버는 `AUTH_JWT_SECRET` 을 꼭 설정한다.
 - 마이페이지: **프로젝트**(목록/상세), **저장소**(`/mypage/drive`: 내 모든 홍보물을 프로젝트·종류별로 필터, 미리보기, 다운로드), **마이프로필**(`/mypage/profile`: 이름·연락처 수정, 비밀번호 변경, 내 활동 요약. test 계정은 변경 불가). 없는 주소는 404 페이지로 연결된다.
 - 샘플 기획서는 `assets/samples/proposals/` (`samples.json` + 파일). 추가하려면 파일을 넣고 `samples.json` 에 항목을 더하면 된다.
   - **디스크 파일명은 영문**(`<id>.pdf`)으로 둔다. 한글 파일명은 zip 압축·해제 과정에서 깨져 샘플을 찾지 못한다(404). 사용자에게 보이는 한글 이름은 `fileName` 에 적는다.
@@ -116,7 +116,7 @@ for s in ai backend front; do
 done
 ```
 
-- 접속: http://localhost:5173 (nginx 한 곳으로 `/`=프론트, `/api/`·`/static/`=백엔드)
+- 접속: http://localhost:5173 (nginx 한 곳으로 `/`=프론트, `/api/`·`/files/`=백엔드)
 - **백엔드가 모든 데이터의 중심이다.** 브라우저 → nginx → 백엔드 → AI·DB. AI 정적 파일(`/static/**`)도 백엔드가 중계한다.
 - AI 서버와 DB 는 호스트에 포트를 열지 않는다. 백엔드만 내부 네트워크(`ai:5000`, `db:3306`)로 접근한다.
 - 디버깅용 직접 포트: 백엔드 http://localhost:8081 (기본은 127.0.0.1 에만 바인딩). AI 를 직접 보려면 `docker compose exec ai curl localhost:5000/`.
