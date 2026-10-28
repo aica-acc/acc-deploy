@@ -105,6 +105,7 @@ services:
       args:
         # 같은 도메인의 nginx 경로를 사용 (도메인이 바뀌어도 재빌드 불필요)
         VITE_API_BASE_URL: ""
+        VITE_MEDIA_BASE_URL: ${VITE_MEDIA_BASE_URL-https://media.donghwan.cloud}
     image: ${ACC_REGISTRY:-scv3114}/acc-front:${ACC_TAG:-latest}
     restart: unless-stopped
     depends_on:
