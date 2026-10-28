@@ -85,6 +85,11 @@ services:
       AUTH_TEST_LOGIN_ENABLED: ${AUTH_TEST_LOGIN_ENABLED:-false}
       AUTH_ADMIN_EMAIL: ${AUTH_ADMIN_EMAIL:-admin@acc.local}
       AUTH_ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD:-}
+      # --- 소셜 로그인 (비우면 버튼이 나오지 않음) ---
+      OAUTH_KAKAO_CLIENT_ID: ${KAKAO_REST_API_KEY:-}
+      OAUTH_KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET:-}
+      OAUTH_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      OAUTH_GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       TEST_SAMPLES_DIR: /data/samples/proposals
       # 기본은 PUBLIC_URL 한 곳만 허용 (화면과 API 가 같은 주소라 보통 CORS 가 필요 없다). vite 개발 서버를 붙일 때만 .env 에서 넓힌다
       CORS_ALLOWED_ORIGIN_PATTERNS: ${CORS_ALLOWED_ORIGIN_PATTERNS:-${PUBLIC_URL:-http://localhost:5173}}
