@@ -75,10 +75,8 @@ services:
       PYTHON_API_URL: http://ai:5000
       ACCAI_BASE_URL: http://ai:5000
       REACT_BASE_PATH: /data/acc-front
-      PYTHON_BASE_DIR: /data/acc-ai/promotion
       FILES_GENERATED_ROOT: /data/acc/data/promotion/
       FILES_PATH: /data/acc/data/proposal
-      FILES_POSTER_IMAGES_DIR: /data/acc-ai/promotion
       # --- 인증 (JWT) ---
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-}
       AUTH_JWT_EXPIRE_HOURS: ${AUTH_JWT_EXPIRE_HOURS:-12}
@@ -93,9 +91,9 @@ services:
       TEST_SAMPLES_DIR: /data/samples/proposals
       # 기본은 PUBLIC_URL 한 곳만 허용 (화면과 API 가 같은 주소라 보통 CORS 가 필요 없다). vite 개발 서버를 붙일 때만 .env 에서 넓힌다
       CORS_ALLOWED_ORIGIN_PATTERNS: ${CORS_ALLOWED_ORIGIN_PATTERNS:-${PUBLIC_URL:-http://localhost:5173}}
+    # AI 결과(promotion)는 마운트하지 않고 AI 의 /internal/promotion 으로 받는다 (트러블슈팅 #21)
     volumes:
       - ./data/front-public:/data/acc-front/public
-      - promotion:/data/acc-ai/promotion
       - acc-files:/data/acc
       - ./assets/samples:/data/samples:ro
 
